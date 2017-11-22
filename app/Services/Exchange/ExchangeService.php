@@ -5,6 +5,7 @@ namespace App\Services\Exchange;
 use App\Services\Middleware;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 
 class ExchangeService
@@ -76,7 +77,15 @@ class ExchangeService
             'headers' => $this->getRequestHeaders(),
         ]);
 
-        return json_decode($response->getBody()->getContents())->currencies;
+        if (Response::HTTP_OK === $response->getStatusCode()) {
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return 'ok' === array_get($data, 'result')
+                ? array_get($data,'currencies')
+                : [];
+        }
+
+        return [];
     }
 
     /**
@@ -89,7 +98,15 @@ class ExchangeService
             'headers' => $this->getRequestHeaders(),
         ]);
 
-        return json_decode($response->getBody()->getContents())->rates;
+        if (Response::HTTP_OK === $response->getStatusCode()) {
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return 'ok' === array_get($data, 'result')
+                ? array_get($data,'rates')
+                : [];
+        }
+
+        return [];
     }
 
     /**
@@ -101,15 +118,15 @@ class ExchangeService
         $rates = collect($this->getRates());
 
         return $rates->mapToGroups(function ($item, $key) use ($currencies) {
-            $fromCurrency = (array)$currencies->where('curr_id', $item->from)->first();
-            $toCurrency = (array)$currencies->where('curr_id', $item->to)->first();
+            $fromCurrency = (array)$currencies->where('curr_id', array_get($item, 'from'))->first();
+            $toCurrency = (array)$currencies->where('curr_id', array_get($item, 'to'))->first();
 
             $fromCode = array_get($fromCurrency, 'curr_code');
             $toCode = array_get($toCurrency, 'curr_code');
 
             $data = [
                 'to'   => $toCode,
-                'rate' => $item->rate,
+                'rate' => array_get($item, 'rate'),
             ];
 
             return [$fromCode => $data];

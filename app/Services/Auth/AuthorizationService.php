@@ -5,6 +5,7 @@ namespace App\Services\Auth;
 use App\Services\Middleware;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
+use Illuminate\Http\Response;
 
 class AuthorizationService
 {
@@ -64,7 +65,13 @@ class AuthorizationService
             'headers' => $this->getCommonRequestHeaders(),
         ]);
 
-        return json_decode($response->getBody()->getContents())->access_token;
+        if (Response::HTTP_OK === $response->getStatusCode()) {
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return array_get($data, 'access_token');
+        }
+
+        return '?';
     }
 
     /**
@@ -78,7 +85,11 @@ class AuthorizationService
             'headers' => $this->getCommonRequestHeaders(),
         ]);
 
-        return json_decode($response->getBody()->getContents(), true);
+        if (Response::HTTP_OK === $response->getStatusCode()) {
+            return json_decode($response->getBody()->getContents(), true);
+        }
+
+        return [];
     }
 
     /**
