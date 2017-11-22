@@ -12,5 +12,12 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    $redirectUrl = route('login');
+    $authUri = \App\Services\Auth\AuthorizationService::getAuthUrl($redirectUrl);
+
+    return view('welcome')->withUri($authUri);
+})->name('main');
+
+Route::get('login', Auth\LoginController::class . '@login')->name('login');
+
+Route::get('/profile', Controller::class . '@showProfile')->name('profile');
