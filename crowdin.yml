@@ -1,0 +1,3 @@
+files:
+  - source: /resources/lang/en
+    translation: /resources/latn/%two_letters_code%/%original_file_name%
