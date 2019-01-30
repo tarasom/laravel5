@@ -1,0 +1,15 @@
+language: php
+
+php:
+  - 7.2
+
+before_script:
+  ## Composer
+  - composer self-update
+  - composer install --prefer-source --dev
+
+script:
+  ## PHP Mess Detector
+  - ./vendor/bin/phpmd src/,tests/ text ./phpmd.xml.dist
+
+after_script
